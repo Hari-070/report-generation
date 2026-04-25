@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 
 export async function POST(req: NextRequest) {
   const { name, phone, email, score } = await req.json();
@@ -10,16 +10,18 @@ export async function POST(req: NextRequest) {
 
   const browser = await puppeteer.launch({
     args: chromium.args,
-    defaultViewport: { width: 1280, height: 800 },
-    executablePath: await chromium.executablePath(),
+    executablePath: await chromium.executablePath(
+      // Chromium binary hosted remotely — Vercel downloads it at runtime
+      'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
+    ),
     headless: true,
+    defaultViewport: { width: 1280, height: 800 },
   });
 
   const page = await browser.newPage();
 
   await page.goto(reportUrl, { waitUntil: 'networkidle0', timeout: 30000 });
 
-  // Wait for AI content to finish loading
   await page.waitForFunction(() => {
     const el = document.querySelector('.print-only');
     return el && el.textContent && el.textContent.length > 100;
