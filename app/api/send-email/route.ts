@@ -37,22 +37,20 @@ function buildEmailHTML({
         <title>Your PRYSM Report</title>
       </head>
       <body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif;">
-        <div style="max-width:600px;margin:32px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           
           <!-- Header -->
-          <div style="background:#0a0f1e;padding:32px 40px;text-align:center;">
+          <div style="background:#0a0f1e;padding:24px 20px;text-align:center;">
             <div style="font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px;">Nu Skin</div>
             <div style="font-size:20px;font-weight:bold;color:#ffffff;">PRYSM Antioxidant Report</div>
           </div>
 
           <!-- Score band -->
-          <div style="padding:32px 40px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:24px;">
-            <div style="text-align:center;min-width:80px;margin-right:24px;">
-              <div style="font-size:48px;font-weight:bold;color:${scoreColor};line-height:1;">${score}</div>
-              <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#999;margin-top:4px;">score</div>
-            </div>
-            <div>
-              <div style="font-size:18px;font-weight:bold;color:#1a1a2e;margin-bottom:4px;">${name}</div>
+          <div style="padding:24px 20px;border-bottom:1px solid #f0f0f0;">
+            <div style="font-size:42px;font-weight:bold;color:${scoreColor};line-height:1;text-align:center;">${score}</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#999;margin-top:4px;text-align:center;">score</div>
+            <div style="margin-top:12px;">
+              <div style="font-size:16px;font-weight:bold;color:#1a1a2e;margin-bottom:4px;">${name}</div>
               <div style="font-size:13px;color:#555;">
                 Scored <strong style="color:${scoreColor};">${scoreLabel}</strong> — ${scoreDescription}
               </div>
@@ -66,13 +64,13 @@ function buildEmailHTML({
           </div>
 
           <!-- AI Summary -->
-          <div style="padding:24px 40px;border-bottom:1px solid #f0f0f0;">
+          <div style="padding:20px;border-bottom:1px solid #f0f0f0;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:${scoreColor};margin-bottom:8px;">AI Health Analysis</div>
             <p style="margin:0;font-size:14px;line-height:1.7;color:#333;">${aiContent.summary}</p>
           </div>
 
           <!-- Recommendations -->
-          <div style="padding:24px 40px;border-bottom:1px solid #f0f0f0;">
+          <div style="padding:20px;border-bottom:1px solid #f0f0f0;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#888;margin-bottom:12px;">Recommendations</div>
             ${aiContent.recommendations
               .map(
@@ -91,7 +89,7 @@ function buildEmailHTML({
           </div>
 
           <!-- Factors -->
-          <div style="padding:24px 40px;border-bottom:1px solid #f0f0f0;">
+          <div style="padding:20px;border-bottom:1px solid #f0f0f0;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#888;margin-bottom:12px;">Influencing Factors</div>
             ${[
               { emoji: "🥗", label: "Nutrition", text: aiContent.nutrition },
@@ -110,7 +108,7 @@ function buildEmailHTML({
           </div>
 
           <!-- Footer -->
-          <div style="padding:20px 40px;text-align:center;background:#f9f9f9;">
+          <div style="padding:16px 20px;text-align:center;background:#f9f9f9;">
             <div style="font-size:11px;color:#aaa;">Nu Skin PRYSM Scanner — for informational purposes only, not medical advice.</div>
             <div style="font-size:11px;color:#bbb;margin-top:4px;">Generated on ${date}</div>
           </div>

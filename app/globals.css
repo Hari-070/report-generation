@@ -108,7 +108,7 @@ body {
 /* #print-report { display: none; } */
 
 @media print {
-  @page { size: A4; margin: 12mm 14mm; }
+  @page { size: A4; margin: 6mm 8mm; }
   /* * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } */
   .print-only,
   .print-only * {

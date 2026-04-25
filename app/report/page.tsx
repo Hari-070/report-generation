@@ -25,6 +25,7 @@ function ReportContent() {
   const phone = searchParams.get("phone") || "";
   const email = searchParams.get("email") || "";
   const score = parseInt(searchParams.get("score") || "0");
+  const ts = searchParams.get('ts') || '';
 
   const [aiContent, setAiContent] = useState<AIContent | null>(null);
   const [loadingAI, setLoadingAI] = useState(true);
@@ -54,7 +55,7 @@ function ReportContent() {
         const res = await fetch("/api/generate-report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, phone, score, scoreLabel: scoreInfo.label }),
+          body: JSON.stringify({ name, email, phone, score, scoreLabel: scoreInfo.label, ts }),
         });
         const data = await res.json();
         if (data.error) throw new Error(data.error);
@@ -283,7 +284,7 @@ function ReportContent() {
       {/* Email status banner */}
       {emailMessage && (
         <div
-          className={`px-6 py-3 text-center text-sm ${
+          className={`screen-only px-6 py-3 text-center text-sm ${
             emailStatus === "success"
               ? "bg-green-500/10 text-green-400 border-b border-green-500/20"
               : "bg-red-500/10 text-red-400 border-b border-red-500/20"
