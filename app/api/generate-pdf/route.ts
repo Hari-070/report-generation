@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 
 export async function POST(req: NextRequest) {
   const { name, phone, email, score } = await req.json();
@@ -7,7 +8,13 @@ export async function POST(req: NextRequest) {
   const params = new URLSearchParams({ name, phone, email, score: score.toString() });
   const reportUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/report?${params.toString()}`;
 
-  const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: { width: 1280, height: 800 },
+    executablePath: await chromium.executablePath(),
+    headless: true,
+  });
+
   const page = await browser.newPage();
 
   await page.goto(reportUrl, { waitUntil: 'networkidle0', timeout: 30000 });
