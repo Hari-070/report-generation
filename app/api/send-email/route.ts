@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { auth } from "@/lib/auth";
+import { MongoClient, ServerApiVersion } from "mongodb";
+
+const client = new MongoClient(process.env.MONGO_URL!, {
+  serverApi: ServerApiVersion.v1,
+});
 
 interface AIContent {
   summary: string;
@@ -121,6 +127,21 @@ function buildEmailHTML({
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    await client.connect();
+    const agents = client.db("prysm").collection("agents");
+    const agent = await agents.findOne({ userId: session.user.id });
+
+    if (!agent?.gmailUser || !agent?.gmailPass) {
+      return NextResponse.json(
+        { error: "Please set up your Gmail credentials in Settings first." },
+        { status: 400 },
+      );
+    }
+
     const body = await req.json();
     const {
       name,
@@ -141,18 +162,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const emailUser = process.env.EMAIL_USER;
-    const emailPass = process.env.EMAIL_PASS;
-
-    if (!emailUser || !emailPass) {
-      return NextResponse.json({
-        success: true,
-        demo: true,
-        message:
-          "Set EMAIL_USER and EMAIL_PASS in .env.local to enable sending.",
-      });
-    }
-
     const pdfRes = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/generate-pdf`,
       {
@@ -168,15 +177,15 @@ export async function POST(req: NextRequest) {
       port: parseInt(process.env.EMAIL_PORT || "587"),
       secure: process.env.EMAIL_PORT === "465",
       auth: {
-        user: emailUser,
-        pass: emailPass,
+        user: agent.gmailUser,
+        pass: agent.gmailPass,
       },
     });
 
     await transporter.verify();
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || `Nu Skin PRYSM Report <${emailUser}>`,
+      from: process.env.EMAIL_FROM || `Nu Skin PRYSM Report <${agent.gmailUser}>`,
       to: email,
       subject: `Your PRYSM Antioxidant Score Report — ${name}`,
       html: buildEmailHTML({

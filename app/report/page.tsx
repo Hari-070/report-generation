@@ -7,6 +7,9 @@ import ScoreGauge from "@/components/ScoreGauge";
 import ReportPreview from "@/components/ReportPreview";
 import html2pdf from "html2pdf.js";
 import PrintReport from "@/components/PrintReport";
+import { Settings, LogOut, ArrowLeft, Download, Mail, Check, Loader2 } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 interface AIContent {
   summary: string;
@@ -20,6 +23,7 @@ function ReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reportRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
 
   const name = searchParams.get("name") || "";
   const phone = searchParams.get("phone") || "";
@@ -35,6 +39,20 @@ function ReportContent() {
     "idle",
   );
   const [emailMessage, setEmailMessage] = useState("");
+
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click:
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const scoreInfo = getScoreInfo(score);
   const today = new Date().toLocaleDateString("en-IN", {
@@ -188,48 +206,29 @@ function ReportContent() {
       {/* Header */}
       <header className="screen-only border-b border-white/5 px-6 py-4 sticky top-0 z-50 bg-[#080c18]/80 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
+          
+          {/* Left — Back button */}
           <button
             onClick={() => router.push("/")}
             className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm"
           >
-            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-            </svg>
+            <ArrowLeft className="w-4 h-4" />
             New Report
           </button>
 
-          <div className="flex items-center gap-3">
+          {/* Right — Actions */}
+          <div className="flex items-center gap-2">
+
             {/* Download PDF */}
             <button
               onClick={handleDownloadPDF}
               disabled={downloadingPDF || loadingAI}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm disabled:opacity-40"
             >
-              {downloadingPDF ? (
-                <svg
-                  className="w-4 h-4 animate-spin"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-                </svg>
-              )}
+              {downloadingPDF
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <Download className="w-4 h-4" />
+              }
               Download PDF
             </button>
 
@@ -239,44 +238,106 @@ function ReportContent() {
               disabled={sendingEmail || loadingAI || emailStatus === "success"}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-white font-medium transition-all text-sm disabled:opacity-40"
               style={{
-                background:
-                  emailStatus === "success"
-                    ? "linear-gradient(135deg, #22c55e, #16a34a)"
-                    : `linear-gradient(135deg, ${scoreInfo.hex}cc, ${scoreInfo.hex}88)`,
+                background: emailStatus === "success"
+                  ? "linear-gradient(135deg, #22c55e, #16a34a)"
+                  : `linear-gradient(135deg, ${scoreInfo.hex}cc, ${scoreInfo.hex}88)`,
                 boxShadow: `0 0 20px ${scoreInfo.hex}30`,
               }}
             >
-              {sendingEmail ? (
-                <svg
-                  className="w-4 h-4 animate-spin"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-              ) : emailStatus === "success" ? (
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-                </svg>
-              )}
+              {sendingEmail
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : emailStatus === "success"
+                  ? <Check className="w-4 h-4" />
+                  : <Mail className="w-4 h-4" />
+              }
               {emailStatus === "success" ? "Sent!" : "Send via Email"}
             </button>
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-white/10 mx-1" />
+
+            {/* Profile Dropdown */}
+          <div ref={profileRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setProfileOpen(p => !p)}
+              className="rounded-full border-2 border-white/10 hover:border-white/30 transition-all overflow-hidden w-8 h-8 flex-shrink-0"
+            >
+              {session?.user?.image
+                ? <img src={"https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} alt="" className="w-full h-full object-cover" />
+                : <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                    {session?.user?.name?.[0] ?? "A"}
+                  </div>
+              }
+            </button>
+
+            {profileOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 10px)',
+                  right: 0,
+                  width: '220px',
+                  background: '#0d1424',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '14px',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                  overflow: 'hidden',
+                  zIndex: 100,
+                }}
+              >
+                {/* User info */}
+                  <div style={{ padding: '14px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+                        {session?.user?.image
+                          ? <img src={"https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #60a5fa, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                              {session?.user?.name?.[0] ?? "A"}
+                            </div>
+                        }
+                      </div>
+                      <div style={{ overflow: 'hidden' }}>
+                        <div style={{ color: 'white', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {session?.user?.name}
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {session?.user?.email}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Separator */}
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '0' }} />
+
+                  {/* Settings */}
+                  <button
+                    onClick={() => { router.push('/settings'); setProfileOpen(false); }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '11px 16px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '13px', cursor: 'pointer', transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                  >
+                    <Settings size={14} />
+                    Settings
+                  </button>
+
+                  {/* Separator */}
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+
+                  {/* Sign out */}
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/login' })}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '11px 16px', background: 'none', border: 'none', color: 'rgba(239,68,68,0.6)', fontSize: '13px', cursor: 'pointer', transition: 'background 0.15s' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#ef4444'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'rgba(239,68,68,0.6)'; }}
+                    >
+                      <LogOut size={14} />
+                      Sign Out
+                    </button>
+            </div>
+            )}
+          </div>
+
           </div>
         </div>
       </header>

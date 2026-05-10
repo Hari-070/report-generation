@@ -116,26 +116,24 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <div className="text-xs text-white/30">Report Generator v1.0</div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px" }}>
-            {session?.user?.email}
-          </span>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            style={{
-              color: "rgba(255,255,255,0.3)",
-              fontSize: "12px",
-              background: "none",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "8px",
-              padding: "6px 12px",
-              cursor: "pointer",
-            }}
-          >
-            Sign Out
-          </button>
+          <div className="flex-col justify-center items-end">
+            <div className="text-xs text-white/30 w-fit">Report Generator v1.0</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{session?.user?.email}</span>
+              <button
+                onClick={() => router.push('/settings')}
+                style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer' }}
+              >
+                Settings
+              </button>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer' }}
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
