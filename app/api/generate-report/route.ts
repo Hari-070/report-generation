@@ -4,6 +4,7 @@ import puppeteer from "puppeteer";
 import { GoogleGenAI } from "@google/genai";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import { v4 as uuidv4 } from "uuid";
+import { auth } from "@/lib/auth";
 
 interface AIContent {
   summary: string;
@@ -94,6 +95,12 @@ async function getDb() {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const agentId = session.user.id; // every record tagged to this agent
+
     const body = await req.json();
     const {
       name,
@@ -112,6 +119,7 @@ export async function POST(req: NextRequest) {
     // 2. Add this block — early return if reload
     if (ts) {
       const existingTs = await collection.findOne({
+        agentId,
         $or: [...(email ? [{ email }] : []), ...(phone ? [{ phone }] : [])],
         "history.ts": ts,
       });
@@ -127,6 +135,7 @@ export async function POST(req: NextRequest) {
 
     // Look for existing record by email or phone
     const existing = await collection.findOne({
+      agentId, // scope to agent
       $or: [...(email ? [{ email }] : []), ...(phone ? [{ phone }] : [])],
     });
 
@@ -155,6 +164,7 @@ export async function POST(req: NextRequest) {
     const uuid = uuidv4();
     await collection.insertOne({
       uuid,
+      agentId, // tag with agentId
       name,
       email,
       phone,

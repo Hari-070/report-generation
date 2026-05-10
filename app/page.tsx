@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getScoreInfo } from "@/lib/score";
+import { signOut, useSession } from "next-auth/react";
 
 interface FormData {
   name: string;
@@ -28,6 +29,8 @@ export default function HomePage() {
 
   const scoreNum = parseInt(form.score) || 0;
   const scoreInfo = scoreNum >= 100 ? getScoreInfo(scoreNum) : null;
+
+  const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +117,25 @@ export default function HomePage() {
             </div>
           </div>
           <div className="text-xs text-white/30">Report Generator v1.0</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px" }}>
+            {session?.user?.email}
+          </span>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            style={{
+              color: "rgba(255,255,255,0.3)",
+              fontSize: "12px",
+              background: "none",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "8px",
+              padding: "6px 12px",
+              cursor: "pointer",
+            }}
+          >
+            Sign Out
+          </button>
         </div>
       </header>
 
